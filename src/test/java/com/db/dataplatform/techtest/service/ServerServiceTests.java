@@ -3,6 +3,7 @@ package com.db.dataplatform.techtest.service;
 import com.db.dataplatform.techtest.server.api.model.DataEnvelope;
 import com.db.dataplatform.techtest.server.component.Server;
 import com.db.dataplatform.techtest.server.component.impl.ServerImpl;
+import com.db.dataplatform.techtest.server.exception.HadoopClientException;
 import com.db.dataplatform.techtest.server.mapper.ServerMapperConfiguration;
 import com.db.dataplatform.techtest.server.persistence.BlockTypeEnum;
 import com.db.dataplatform.techtest.server.persistence.model.DataBodyEntity;
@@ -14,6 +15,10 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -82,5 +87,14 @@ public class ServerServiceTests {
 
         assertThat(updated).isTrue();
         verify(dataBodyServiceImplMock, times(1)).getDataByBlockName("TSLA-USDGBP-10Z");
+    }
+
+    @Test(expected = HadoopClientException.class)
+    public void shouldCallHadoopDataLakeServiceAsExpected() throws HadoopClientException {
+        RestTemplate restTemplate = spy(new RestTemplate());
+        String url = "http://localhost:8090/hadoopserver/pushbigdata";
+        server.callHadoopDataLakeService(restTemplate, url, testDataEnvelope);
+
+        verify(restTemplate, times(1)).exchange(url, HttpMethod.POST, any(HttpEntity.class), HttpStatus.class);
     }
 }

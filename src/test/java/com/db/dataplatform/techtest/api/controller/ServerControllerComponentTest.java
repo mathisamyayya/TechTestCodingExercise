@@ -12,10 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -30,7 +27,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup;
@@ -45,9 +42,6 @@ public class ServerControllerComponentTest {
     @Mock
     private Server serverMock;
 
-    @Mock
-    private RestTemplate restTemplate;
-
     private DataEnvelope testDataEnvelope;
     private List<DataEnvelope> testDataEnvelopes;
     private ObjectMapper objectMapper;
@@ -56,7 +50,7 @@ public class ServerControllerComponentTest {
 
     @Before
     public void setUp() throws HadoopClientException, NoSuchAlgorithmException, IOException {
-        serverController = new ServerController(serverMock, restTemplate);
+        serverController = new ServerController(serverMock);
         mockMvc = standaloneSetup(serverController).build();
         objectMapper = Jackson2ObjectMapperBuilder
                 .json()
@@ -68,7 +62,6 @@ public class ServerControllerComponentTest {
         when(serverMock.saveDataEnvelope(any(DataEnvelope.class))).thenReturn(true);
         when(serverMock.getDataEnvelope(any(BlockTypeEnum.class))).thenReturn(testDataEnvelopes);
         when(serverMock.updateDataEnvelope(anyString(), any(BlockTypeEnum.class))).thenReturn(true);
-        when(restTemplate.exchange(any(String.class), any(HttpMethod.class), any(), any(Class.class))).thenReturn(new ResponseEntity<>(HttpStatus.OK));
     }
 
     @Test
@@ -84,6 +77,7 @@ public class ServerControllerComponentTest {
 
         boolean checksumPass = Boolean.parseBoolean(mvcResult.getResponse().getContentAsString());
         assertThat(checksumPass).isTrue();
+        verify(serverMock, times(1)).callHadoopDataLakeService(any(RestTemplate.class), anyString(), any(DataEnvelope.class));
     }
 
     @Test

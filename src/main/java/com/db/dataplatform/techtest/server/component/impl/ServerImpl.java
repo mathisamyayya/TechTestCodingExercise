@@ -4,16 +4,25 @@ import com.db.dataplatform.techtest.server.api.model.DataBody;
 import com.db.dataplatform.techtest.server.api.model.DataEnvelope;
 import com.db.dataplatform.techtest.server.api.model.DataHeader;
 import com.db.dataplatform.techtest.server.component.Server;
+import com.db.dataplatform.techtest.server.exception.HadoopClientException;
 import com.db.dataplatform.techtest.server.persistence.BlockTypeEnum;
 import com.db.dataplatform.techtest.server.persistence.model.DataBodyEntity;
 import com.db.dataplatform.techtest.server.persistence.model.DataHeaderEntity;
 import com.db.dataplatform.techtest.server.service.DataBodyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.util.Strings;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
+import javax.validation.ConstraintViolationException;
 import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -117,6 +126,29 @@ public class ServerImpl implements Server {
 
     private Optional<DataBodyEntity> retrieveByName(String blockName) {
         return dataBodyServiceImpl.getDataByBlockName(blockName);
+    }
+
+    @Retryable(value = {ConstraintViolationException.class, HadoopClientException.class}, maxAttempts = 3, backoff = @Backoff(delay = 3000))
+    @Override
+    public void callHadoopDataLakeService(RestTemplate restTemplate, String url, DataEnvelope dataEnvelope) throws HadoopClientException {
+        //Exercise 5
+        try {
+            HttpEntity<DataEnvelope> requestEntity = new HttpEntity<>(dataEnvelope);
+            restTemplate.exchange(
+                    url,
+                    HttpMethod.POST,
+                    requestEntity,
+                    HttpStatus.class
+            );
+        } catch (Exception ex) {
+            throw new HadoopClientException("Hadoop data lake is still recovering");
+        }
+    }
+
+    @Recover
+    public String recoverFromFailure(HadoopClientException hex, RestTemplate restTemplate, String url, DataEnvelope dataEnvelope) {
+        log.info("Recovering from the data lake service {}", hex.getMessage());
+        return "Service recovered from HadoopClientException in hadoop data lake service failure.";
     }
 
 }
