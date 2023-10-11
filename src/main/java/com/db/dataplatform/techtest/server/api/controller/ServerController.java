@@ -25,8 +25,6 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-import static org.springframework.http.HttpStatus.GATEWAY_TIMEOUT;
-
 @Slf4j
 @Controller
 @RequestMapping("/dataserver")
@@ -48,14 +46,15 @@ public class ServerController {
         log.info("Data envelope persisted. Attribute name: {}", dataEnvelope.getDataHeader().getName());
 
         //Exercise 5
-        HttpEntity<DataEnvelope> requestEntity = new HttpEntity<>(dataEnvelope);
-        ResponseEntity<HttpStatus> response = restTemplate.exchange(
-                URI_PUSHDATA,
-                HttpMethod.POST,
-                requestEntity,
-                HttpStatus.class
-        );
-        if (response.getStatusCode() == GATEWAY_TIMEOUT) {
+        try {
+            HttpEntity<DataEnvelope> requestEntity = new HttpEntity<>(dataEnvelope);
+            restTemplate.exchange(
+                    URI_PUSHDATA,
+                    HttpMethod.POST,
+                    requestEntity,
+                    HttpStatus.class
+            );
+        } catch (Exception ex) {
             throw new HadoopClientException("Hadoop data lake is still recovering");
         }
         return ResponseEntity.ok(checksumPass);
@@ -84,8 +83,8 @@ public class ServerController {
     }
 
     @Recover
-    public String recoverFromFailure(ConstraintViolationException cve) {
-        log.info("Service recovering from the data lake");
+    public String recoverFromFailure(HadoopClientException hex) {
+        log.info("Recovering from the data lake service");
         return "Service recovered from hadoop data lake service failure.";
     }
 }
