@@ -17,10 +17,11 @@ public class DataEnvelopeTests {
 
     @Test
     public void assignDataHeaderFieldsShouldWorkAsExpected() {
+        String MD5_CHECKSUM = "cecfd3953783df706878aaec2c22aa70";
         DataHeader dataHeader = new DataHeader(TEST_NAME, BlockTypeEnum.BLOCKTYPEA);
         DataBody dataBody = new DataBody(DUMMY_DATA);
 
-        DataEnvelope dataEnvelope = new DataEnvelope(dataHeader, dataBody);
+        DataEnvelope dataEnvelope = new DataEnvelope(MD5_CHECKSUM, dataHeader, dataBody);
 
         assertThat(dataEnvelope).isNotNull();
         assertThat(dataEnvelope.getDataHeader()).isNotNull();

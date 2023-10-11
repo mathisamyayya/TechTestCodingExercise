@@ -78,9 +78,9 @@ public class ServerServiceTests {
 
     @Test
     public void shouldUpdateDataEnvelopeAsExpected() {
-        boolean updated = server.updateDataEnvelope("TSLA-USDGBP-10Y", BlockTypeEnum.BLOCKTYPEA);
+        boolean updated = server.updateDataEnvelope("TSLA-USDGBP-10Z", BlockTypeEnum.BLOCKTYPEA);
 
         assertThat(updated).isTrue();
-        verify(dataBodyServiceImplMock, times(1)).getDataByBlockName("TSLA-USDGBP-10Y");
+        verify(dataBodyServiceImplMock, times(1)).getDataByBlockName("TSLA-USDGBP-10Z");
     }
 }

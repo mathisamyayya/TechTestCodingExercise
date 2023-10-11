@@ -101,7 +101,7 @@ public class ServerControllerComponentTest {
     @Test
     public void testUpdateDataPutCallWorksAsExpected() throws Exception {
 
-        MvcResult mvcResult = mockMvc.perform(put(URI_PATCHDATA.expand("TSLA-USDGBP-10Y", BlockTypeEnum.BLOCKTYPEA.name()).toString()))
+        MvcResult mvcResult = mockMvc.perform(put(URI_PATCHDATA.expand("TSLA-USDGBP-10I", BlockTypeEnum.BLOCKTYPEA.name()).toString()))
                 .andExpect(status().isOk())
                 .andReturn();
 

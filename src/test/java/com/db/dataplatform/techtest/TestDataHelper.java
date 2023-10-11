@@ -31,16 +31,18 @@ public class TestDataHelper {
     }
 
     public static DataEnvelope createTestDataEnvelopeApiObject() {
+        String MD5_CHECKSUM = "cecfd3953783df706878aaec2c22aa70";
         DataBody dataBody = new DataBody(DUMMY_DATA);
         DataHeader dataHeader = new DataHeader(TEST_NAME, BlockTypeEnum.BLOCKTYPEA);
 
-        return new DataEnvelope(dataHeader, dataBody);
+        return new DataEnvelope(MD5_CHECKSUM, dataHeader, dataBody);
     }
 
     public static DataEnvelope createTestDataEnvelopeApiObjectWithEmptyName() {
+        String MD5_CHECKSUM = "cecfd3953783df706878aaec2c22aa70";
         DataBody dataBody = new DataBody(DUMMY_DATA);
         DataHeader dataHeader = new DataHeader(TEST_NAME_EMPTY, BlockTypeEnum.BLOCKTYPEA);
 
-        return new DataEnvelope(dataHeader, dataBody);
+        return new DataEnvelope(MD5_CHECKSUM, dataHeader, dataBody);
     }
 }

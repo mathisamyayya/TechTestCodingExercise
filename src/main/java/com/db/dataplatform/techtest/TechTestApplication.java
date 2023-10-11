@@ -57,7 +57,7 @@ public class TechTestApplication {
 
 		DataHeader dataHeader = new DataHeader(HEADER_NAME, BlockTypeEnum.BLOCKTYPEA);
 
-		DataEnvelope dataEnvelope = new DataEnvelope(dataHeader, dataBody);
+		DataEnvelope dataEnvelope = new DataEnvelope(MD5_CHECKSUM, dataHeader, dataBody);
 
 		client.pushData(dataEnvelope);
 	}

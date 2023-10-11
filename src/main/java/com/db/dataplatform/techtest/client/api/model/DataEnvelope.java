@@ -16,6 +16,9 @@ import javax.validation.constraints.NotNull;
 public class DataEnvelope {
 
     @NotNull
+    private String hash;
+
+    @NotNull
     private DataHeader dataHeader;
 
     @NotNull

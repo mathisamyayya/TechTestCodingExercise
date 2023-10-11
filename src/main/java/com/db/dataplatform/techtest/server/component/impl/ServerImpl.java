@@ -10,12 +10,11 @@ import com.db.dataplatform.techtest.server.persistence.model.DataHeaderEntity;
 import com.db.dataplatform.techtest.server.service.DataBodyService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.util.Strings;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
@@ -37,28 +36,21 @@ public class ServerImpl implements Server {
     @Override
     public boolean saveDataEnvelope(DataEnvelope envelope) throws IOException, NoSuchAlgorithmException {
         //Exercise 2
-        String checksum = calculateMD5Checksum(envelope);
-        if (envelope.getDataBody().getDataBody().equals(checksum)) {
-            log.info("Checksum is true");
+        String checksum = calculateMD5Checksum(envelope.getDataBody().getDataBody());
+        if (envelope.getHash().equals(checksum)) {
+            log.info("Checksum matches with the body of the incoming block");
+            // Save to persistence.
+            persist(envelope);
+            log.info("Data persisted successfully, data name: {}", envelope.getDataHeader().getName());
+            return true;
         }
-        // Save to persistence.
-        persist(envelope);
-
-        log.info("Data persisted successfully, data name: {}", envelope.getDataHeader().getName());
-        return true;
+        return false;
     }
 
-    private String calculateMD5Checksum(Object object) throws IOException, NoSuchAlgorithmException {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream);
-
-        objectOutputStream.writeObject(object);
-        objectOutputStream.flush();
-        byte[] objectBytes = byteArrayOutputStream.toByteArray();
-
+    private String calculateMD5Checksum(String body) throws NoSuchAlgorithmException {
         String checksumAlgorithm = "MD5";
         MessageDigest md5 = MessageDigest.getInstance(checksumAlgorithm);
-        byte[] md5Checksum = md5.digest(objectBytes);
+        byte[] md5Checksum = md5.digest(body.getBytes());
 
         StringBuilder md5Hex = new StringBuilder();
         for (byte b : md5Checksum) {
@@ -101,7 +93,7 @@ public class ServerImpl implements Server {
         return dataBodyEntities.stream().map(dataBodyEntity -> {
             DataHeader dataHeader = new DataHeader(dataBodyEntity.getDataHeaderEntity().getName(), dataBodyEntity.getDataHeaderEntity().getBlocktype());
             DataBody dataBody = new DataBody(dataBodyEntity.getDataBody());
-            return new DataEnvelope(dataHeader, dataBody);
+            return new DataEnvelope(Strings.EMPTY, dataHeader, dataBody);
         }).collect(Collectors.toList());
     }
 

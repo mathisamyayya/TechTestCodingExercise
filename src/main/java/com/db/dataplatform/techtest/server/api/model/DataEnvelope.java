@@ -18,6 +18,9 @@ import java.io.Serializable;
 public class DataEnvelope implements Serializable {
 
     @NotNull
+    private String hash;
+
+    @NotNull
     @Valid
     private DataHeader dataHeader;
 
